@@ -8,9 +8,10 @@ const Height = canvas.height * ResolutionValue
 const PI2 = Math.PI * 2
 const MaxNodeCount = 5
 const NodeSize = 5
-const SelectSize = 20
 const ConnectRange = 200
-const CountOfNode = 50
+const CountOfNode = 120
+
+const SelectSize = 20
 const HoverBigger = 10
 
 let SelectedNode = undefined
@@ -41,11 +42,16 @@ class Node {
 
         this.connecting_node = []
         this.nodes = []
+
+        this.color = `black`
     }
     posToStr() {
         return `(${this.x}, ${this.y})`
     }
     draw() {
+        ctx.fillStyle = this.color
+        ctx.strokeStyle = this.color
+        
         ctx.beginPath()
         ctx.arc(this.x, this.y, this.r, 0, PI2)
         ctx.fill()
@@ -60,7 +66,10 @@ class Node {
         }
     }
     connectNode(node) {
-        if (this.nodes.length > MaxNodeCount || node.nodes.length > MaxNodeCount) {
+        if(this==node){
+            return false
+        }
+        if (this.nodes.length + 1 >= MaxNodeCount || node.nodes.length + 1 >= MaxNodeCount) {
             return false
         }
         this.connecting_node.push(node)
@@ -72,18 +81,24 @@ class Node {
 
 const renderList = []
 for (var i = 0; i < CountOfNode; i++) {
-    renderList.push(new Node(random(1000) + 100, random(1000) + 100, NodeSize))
+    renderList.push(new Node(random(1300) + 100, random(1300) + 100, NodeSize))
 }
 
+//Connect Node
 for (var i = 0; i < renderList.length; i++) {
     const around = []
     for (var j = i + 1; j < renderList.length; j++) {
         if (distance(renderList[i], renderList[j]) < ConnectRange) {
             around.push(renderList[j])
         }
-        if (around.length >= MaxNodeCount) break
     }
     for (var j = 0; j < around.length; j++) {
+        if(renderList[i]===renderList[j]){
+            continue
+        }
+        if(renderList[i].nodes.length >= MaxNodeCount){
+            break
+        }
         renderList[i].connectNode(around[j])
     }
 }
@@ -98,6 +113,7 @@ function render() {
 
 render()
 
+//Event Function
 canvas.addEventListener("mousemove", (e) => {
     if (SelectedNode !== undefined) {
         SelectedNode.x = e.offsetX * ResolutionValue
@@ -129,6 +145,10 @@ canvas.addEventListener("mousedown", (e) => {
     for (var i = 0; i < renderList.length; i++) {
         if (distance(renderList[i], pos) <= SelectSize) {
             SelectedNode = renderList[i]
+            SelectedNode.color = "red"
+            for (var j = 0; j < SelectedNode.nodes.length; j++) {
+                SelectedNode.nodes[j].color = "red"
+            }
             break
         }
     }
@@ -136,6 +156,10 @@ canvas.addEventListener("mousedown", (e) => {
 
 canvas.addEventListener("mouseup", (e) => {
     if (SelectedNode !== undefined) {
+        SelectedNode.color = "black"
+        for (var j = 0; j < SelectedNode.nodes.length; j++) {
+            SelectedNode.nodes[j].color = "black"
+        }
         SelectedNode = undefined
     }
 })
