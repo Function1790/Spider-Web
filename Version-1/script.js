@@ -1,3 +1,4 @@
+const posViewer = document.getElementById("pos")
 const canvas = document.getElementById("canvas")
 const ctx = canvas.getContext("2d")
 
@@ -6,10 +7,10 @@ const Width = canvas.width * ResolutionValue
 const Height = canvas.height * ResolutionValue
 
 const PI2 = Math.PI * 2
-const MaxNodeCount = 5
+const MaxNodeCount =200
 const NodeSize = 5
 const ConnectRange = 200
-const CountOfNode = 120
+const CountOfNode = 200
 
 const SelectSize = 20
 const HoverBigger = 10
@@ -43,30 +44,39 @@ class Node {
         this.connecting_node = []
         this.nodes = []
 
-        this.color = `black`
+        this.color = "black"
     }
     posToStr() {
-        return `(${this.x}, ${this.y})`
+        return `(${parseInt(this.x)}, ${parseInt(this.y)})`
     }
     draw() {
+        ctx.lineWidth = 2
         ctx.fillStyle = this.color
         ctx.strokeStyle = this.color
-        
-        ctx.beginPath()
-        ctx.arc(this.x, this.y, this.r, 0, PI2)
-        ctx.fill()
-        ctx.closePath()
 
         for (var i = 0; i < this.connecting_node.length; i++) {
             ctx.beginPath()
+            if (this.color === "red" && this !== SelectedNode) {
+                if (this.connecting_node[i] === SelectedNode) {
+                    ctx.strokeStyle = "red"
+                }
+                else {
+                    ctx.strokeStyle = "black"
+                }
+            }
             ctx.moveTo(this.x, this.y)
             ctx.lineTo(this.connecting_node[i].x, this.connecting_node[i].y)
             ctx.stroke()
             ctx.closePath()
         }
+
+        ctx.beginPath()
+        ctx.arc(this.x, this.y, this.r, 0, PI2)
+        ctx.fill()
+        ctx.closePath()
     }
     connectNode(node) {
-        if(this==node){
+        if (this == node) {
             return false
         }
         if (this.nodes.length + 1 >= MaxNodeCount || node.nodes.length + 1 >= MaxNodeCount) {
@@ -74,7 +84,7 @@ class Node {
         }
         this.connecting_node.push(node)
         this.nodes.push(node)
-        node.nodes.push(node)
+        node.nodes.push(this)
         return true
     }
 }
@@ -93,10 +103,10 @@ for (var i = 0; i < renderList.length; i++) {
         }
     }
     for (var j = 0; j < around.length; j++) {
-        if(renderList[i]===renderList[j]){
+        if (renderList[i] === around[j]) {
             continue
         }
-        if(renderList[i].nodes.length >= MaxNodeCount){
+        if (renderList[i].nodes.length >= MaxNodeCount) {
             break
         }
         renderList[i].connectNode(around[j])
@@ -108,6 +118,12 @@ function render() {
     for (var i = 0; i < renderList.length; i++) {
         renderList[i].draw()
     }
+    if (SelectedNode !== undefined) {
+        SelectedNode.draw()
+        for (var i = 0; i < SelectedNode.nodes.length; i++) {
+            SelectedNode.nodes[i].draw()
+        }
+    }
     requestAnimationFrame(render)
 }
 
@@ -115,12 +131,14 @@ render()
 
 //Event Function
 canvas.addEventListener("mousemove", (e) => {
+    const pos = new Vector(e.offsetX * ResolutionValue, e.offsetY * ResolutionValue)
+    posViewer.innerText = `(${pos.x}, ${pos.y})`
     if (SelectedNode !== undefined) {
         SelectedNode.x = e.offsetX * ResolutionValue
         SelectedNode.y = e.offsetY * ResolutionValue
         return
     }
-    const pos = new Vector(e.offsetX * ResolutionValue, e.offsetY * ResolutionValue)
+
     if (HoverNode !== undefined && distance(HoverNode, pos) > HoverNode.r) {
         HoverNode.r = NodeSize
         HoverNode = undefined
