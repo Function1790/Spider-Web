@@ -1,0 +1,14 @@
+body {
+    background-color: #e2e2e2;
+}
+
+canvas {
+    width : 800px;
+    height: 800px;
+    background-color: white;
+    border: 3px solid #464646;
+}
+
+div{
+    user-select: none;
+}
