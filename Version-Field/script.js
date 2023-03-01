@@ -1,4 +1,6 @@
 const posViewer = document.getElementById("pos")
+const puaseBtn = document.getElementById("pauseBtn")
+
 const canvas = document.getElementById("canvas")
 const ctx = canvas.getContext("2d")
 
@@ -8,19 +10,22 @@ const Height = canvas.height * ResolutionValue
 
 const PI2 = Math.PI * 2
 const MaxNodeCount = 5
-const NodeSize = 5
-const ConnectRange = 200
-const CountOfNode = 100
+const NodeSize = 1
+const ConnectRange = 30
+const CountOfNode = 50
 
-const InteractionValue = 0.05   //0.05
-const HeldTension = 0.05        //0.05
+const InteractionValue = 0.25   //0.05
+const HeldTension = 0.1        //0.05
 const PreservationValue = 0.9   //0.9
 
 const SelectSize = 20
 const HoverBigger = 10
 
+const NodeColor = "rgba(96,158,255,0.8)"
+
 let SelectedNode = undefined
 let HoverNode = undefined
+let pauseState = false
 
 function distance(A, B) {
     return Math.sqrt((A.x - B.x) ** 2 + (A.y - B.y) ** 2)
@@ -51,7 +56,7 @@ class Node {
         this.connecting_node = []
         this.nodes = []
 
-        this.color = "black"
+        this.color = NodeColor
     }
     get v_x() {
         return this.vel.x
@@ -67,6 +72,7 @@ class Node {
         ctx.fillStyle = this.color
         ctx.strokeStyle = this.color
 
+
         for (var i = 0; i < this.connecting_node.length; i++) {
             ctx.beginPath()
             if (this.color === "red" && this !== SelectedNode) {
@@ -74,7 +80,7 @@ class Node {
                     ctx.strokeStyle = "red"
                 }
                 else {
-                    ctx.strokeStyle = "black"
+                    ctx.strokeStyle = NodeColor
                 }
             }
             ctx.moveTo(this.x, this.y)
@@ -87,6 +93,7 @@ class Node {
         ctx.arc(this.x, this.y, this.r, 0, PI2)
         ctx.fill()
         ctx.closePath()
+
     }
     isSelected() {
         return SelectedNode === this
@@ -139,7 +146,9 @@ class Node {
 
 const renderList = []
 for (var i = 0; i < CountOfNode; i++) {
-    renderList.push(new Node(random(1300) + 100, random(1300) + 100, NodeSize))
+    for (var j = 0; j < CountOfNode; j++) {
+        renderList.push(new Node(j * (ConnectRange - 1) + 50, i * (ConnectRange - 1) + 50, NodeSize))
+    }
 }
 
 //Connect Node
@@ -165,7 +174,9 @@ function render() {
     ctx.clearRect(0, 0, Width, Height)
     for (var i = 0; i < renderList.length; i++) {
         renderList[i].draw()
-        renderList[i].move()
+        if (!pauseState) {
+            renderList[i].move()
+        }
     }
     if (SelectedNode !== undefined) {
         SelectedNode.draw()
@@ -216,11 +227,11 @@ canvas.addEventListener("mousedown", (e) => {
     for (var i = 0; i < renderList.length; i++) {
         if (distance(renderList[i], pos) <= SelectSize) {
             SelectedNode = renderList[i]
-            SelectedNode.lastPos.x = SelectedNode.x
-            SelectedNode.lastPos.y = SelectedNode.y
+            //SelectedNode.lastPos.x = SelectedNode.x
+            //SelectedNode.lastPos.y = SelectedNode.y
             SelectedNode.color = "red"
             for (var j = 0; j < SelectedNode.nodes.length; j++) {
-                SelectedNode.nodes[j].lastPos = new Vector(SelectedNode.nodes[j].x, SelectedNode.nodes[j].y)
+                //SelectedNode.nodes[j].lastPos = new Vector(SelectedNode.nodes[j].x, SelectedNode.nodes[j].y)
                 SelectedNode.nodes[j].color = "red"
             }
             break
@@ -230,10 +241,22 @@ canvas.addEventListener("mousedown", (e) => {
 
 canvas.addEventListener("mouseup", (e) => {
     if (SelectedNode !== undefined) {
-        SelectedNode.color = "black"
+        SelectedNode.color = NodeColor
         for (var j = 0; j < SelectedNode.nodes.length; j++) {
-            SelectedNode.nodes[j].color = "black"
+            SelectedNode.nodes[j].color = NodeColor
         }
         SelectedNode = undefined
+    }
+})
+
+puaseBtn.addEventListener("click", (e) => {
+    if (pauseState) {
+        pauseState = false
+        puaseBtn.style.background = "rgb(57, 57, 57)"
+        puaseBtn.innerText = "Pause"
+    } else {
+        pauseState = true
+        puaseBtn.style.background = "rgb(105, 48, 48)"
+        puaseBtn.innerText = "Cancel"
     }
 })

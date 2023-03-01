@@ -1,0 +1,33 @@
+body {
+    background-color: #e2e2e2;
+}
+
+canvas {
+    width: 800px;
+    height: 800px;
+    background-color: white;
+    border: 3px solid #464646;
+}
+
+div {
+    margin-top: 10px;
+    margin-left: 20px;
+    user-select: none;
+    width: 300px;
+}
+
+#pauseBtn {
+    width: 200px;
+    height: 50px;
+    background-color: rgb(57, 57, 57);
+    color: white;
+    box-sizing: border-box;
+    padding: 10px;
+    text-align: center;
+    cursor: pointer;
+    font-size: 20px;
+}
+
+#toolContainer{
+    display: flex;
+}
